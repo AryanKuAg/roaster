@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:roaster/models/user.dart';
+import 'package:roaster/pages/comments.dart';
 import 'package:roaster/pages/home.dart';
 import 'package:roaster/widgets/custom_image.dart';
 import 'package:roaster/widgets/progress.dart';
@@ -203,19 +204,19 @@ class _PostState extends State<Post> {
               ),
             ),
             Padding(padding: EdgeInsets.only(right: 20.0)),
-            // GestureDetector(
-            //   onTap: () => showComments(
-            //     context,
-            //     postId: postId,
-            //     ownerId: ownerId,
-            //     mediaUrl: mediaUrl,
-            //   ),
-            //   child: Icon(
-            //     Icons.chat,
-            //     size: 28.0,
-            //     color: Colors.blue[900],
-            //   ),
-            // ),
+            GestureDetector(
+              onTap: () => showComments(
+                context,
+                postId: postId,
+                ownerId: ownerId,
+                mediaUrl: mediaUrl,
+              ),
+              child: Icon(
+                Icons.chat,
+                size: 28.0,
+                color: Colors.blue[900],
+              ),
+            ),
           ],
         ),
         Row(
@@ -260,4 +261,15 @@ class _PostState extends State<Post> {
       children: [buildPostHeader(), buildPostImage(), buildPostFooter()],
     );
   }
+}
+
+showComments(BuildContext context,
+    {String postId, String ownerId, String mediaUrl}) {
+  Navigator.push(context, MaterialPageRoute(builder: (context) {
+    return Comments(
+      postId: postId,
+      postOwnerId: ownerId,
+      postMediaUrl: mediaUrl,
+    );
+  }));
 }
