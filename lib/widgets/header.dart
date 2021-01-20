@@ -10,6 +10,7 @@ AppBar header(
           color: Colors.white,
           fontSize: isAppTitle ? 50 : 22,
           fontFamily: isAppTitle ? 'Signatra' : ""),
+      overflow: TextOverflow.ellipsis,
     ),
     centerTitle: true,
     backgroundColor: Colors.redAccent,

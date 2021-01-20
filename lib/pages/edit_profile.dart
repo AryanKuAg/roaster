@@ -106,7 +106,31 @@ class _EditProfileState extends State<EditProfile> {
 
   logout() async {
     await googleSignIn.signOut();
-    Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => Home()));
+  }
+
+  handleLogout(BuildContext parentContext) {
+    return showDialog(
+        context: parentContext,
+        builder: (context) {
+          return SimpleDialog(
+            title: Text("Logout From App?"),
+            children: <Widget>[
+              SimpleDialogOption(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    logout();
+                  },
+                  child: Text(
+                    'Confirm',
+                    style: TextStyle(color: Colors.red),
+                  )),
+              SimpleDialogOption(
+                  onPressed: () => Navigator.pop(context), child: Text('No')),
+            ],
+          );
+        });
   }
 
   @override
@@ -165,7 +189,7 @@ class _EditProfileState extends State<EditProfile> {
                       Padding(
                         padding: EdgeInsets.all(16),
                         child: FlatButton.icon(
-                          onPressed: logout,
+                          onPressed: () => handleLogout(context),
                           icon: Icon(Icons.cancel, color: Colors.red),
                           label: Text("Logout",
                               style:
