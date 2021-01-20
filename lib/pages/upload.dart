@@ -21,7 +21,8 @@ class Upload extends StatefulWidget {
   _UploadState createState() => _UploadState();
 }
 
-class _UploadState extends State<Upload> {
+class _UploadState extends State<Upload>
+    with AutomaticKeepAliveClientMixin<Upload> {
   TextEditingController locationController = TextEditingController();
   TextEditingController captionController = TextEditingController();
   File file;
@@ -286,8 +287,12 @@ class _UploadState extends State<Upload> {
     locationController.text = formattedAddress;
   }
 
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     return file == null ? buildSplashScreen() : buildUploadForm();
   }
 }
