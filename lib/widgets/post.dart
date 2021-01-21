@@ -190,37 +190,35 @@ class _PostState extends State<Post> {
   addLikeToActivityFeed() {
     // add a notification to the postOwner's activity feed only if comment made by OTHER user (to avoid getting notification for our own like)
     bool isNotPostOwner = currentUserId != ownerId;
-    if (isNotPostOwner) {
-      activityFeedRef
-          .document(ownerId)
-          .collection("feedItems")
-          .document(postId)
-          .setData({
-        "type": "like",
-        "username": currentUser.username,
-        "userId": currentUser.id,
-        "userProfileImg": currentUser.photoUrl,
-        "postId": postId,
-        "mediaUrl": mediaUrl,
-        "timestamp": timestamp,
-      });
-    }
+    // if (isNotPostOwner) {
+    activityFeedRef
+        .document(ownerId)
+        .collection("feedItems")
+        .document(postId)
+        .setData({
+      "type": "like",
+      "username": currentUser.username,
+      "userId": currentUser.id,
+      "userProfileImg": currentUser.photoUrl,
+      "postId": postId,
+      "mediaUrl": mediaUrl,
+      "timestamp": timestamp,
+    });
   }
 
   removeLikeFromActivityFeed() {
     bool isNotPostOwner = currentUserId != ownerId;
-    if (isNotPostOwner) {
-      activityFeedRef
-          .document(ownerId)
-          .collection("feedItems")
-          .document(postId)
-          .get()
-          .then((doc) {
-        if (doc.exists) {
-          doc.reference.delete();
-        }
-      });
-    }
+    // if (isNotPostOwner) {
+    activityFeedRef
+        .document(ownerId)
+        .collection("feedItems")
+        .document(postId)
+        .get()
+        .then((doc) {
+      if (doc.exists) {
+        doc.reference.delete();
+      }
+    });
   }
 
   handleLikePost() {
