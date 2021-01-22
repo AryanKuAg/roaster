@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "778909863945",
+    "project_id": "roaster-b27f4",
+    "storage_bucket": "roaster-b27f4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:778909863945:android:76ce817d464d549e04a8d8",
+        "android_client_info": {
+          "package_name": "xyz.funfury.roaster"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "778909863945-96lbupfrea6dik1itevmtoafd6ptftra.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "xyz.funfury.roaster",
+            "certificate_hash": "6a02060be06c80b39062a5b021e2af9fbeba140e"
+          }
+        },
+        {
+          "client_id": "778909863945-ir7mdelkpvmoh0i287jc9c75jdgg8nfg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAs8CyL31has-8vBOUfEpRzyo8htkj_c8U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "778909863945-ir7mdelkpvmoh0i287jc9c75jdgg8nfg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
