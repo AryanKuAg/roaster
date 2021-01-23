@@ -1,15 +1,18 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:animator/animator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:image_editor_pro/image_editor_pro.dart';
 import 'package:roaster/models/user.dart';
 import 'package:roaster/pages/activity_feed.dart';
 import 'package:roaster/pages/comments.dart';
 import 'package:roaster/pages/home.dart';
 import 'package:roaster/widgets/custom_image.dart';
 import 'package:roaster/widgets/progress.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class Post extends StatefulWidget {
   final String postId;
@@ -78,6 +81,7 @@ class _PostState extends State<Post> {
   Map likes;
   bool isLiked;
   bool showHeart = false;
+  File _image;
 
   _PostState(
       {this.username,
@@ -257,6 +261,37 @@ class _PostState extends State<Post> {
     }
   }
 
+  Future<String> _findPath({String imageUrl}) async {
+    // final cache = await CacheManager()..getInstance();
+    // final file = await cache.getFile(imageUrl);
+    var file = await DefaultCacheManager().getSingleFile(imageUrl);
+    return file.path;
+  }
+
+  Future<void> getimageditor({String filePath}) async {
+    var decodedImage =
+        await decodeImageFromList(File(filePath).readAsBytesSync());
+
+    final geteditimage =
+        Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return ImageEditorPro(
+        image: File(filePath),
+        imageHeight: decodedImage.height,
+        imageWidth: decodedImage.width,
+        appBarColor: Colors.blue,
+        bottomBarColor: Colors.blue,
+      );
+    })).then((geteditimage) {
+      if (geteditimage != null) {
+        setState(() {
+          _image = geteditimage;
+        });
+      }
+    }).catchError((er) {
+      print(er);
+    });
+  }
+
   buildPostImage() {
     return GestureDetector(
       onDoubleTap: handleLikePost,
@@ -314,6 +349,21 @@ class _PostState extends State<Post> {
                 color: Colors.blue[900],
               ),
             ),
+            Padding(padding: EdgeInsets.only(right: 20.0)),
+            GestureDetector(
+              onTap: () async {
+                final path = await _findPath(imageUrl: mediaUrl);
+
+                getimageditor(
+                  filePath: path,
+                );
+              },
+              child: Icon(
+                Icons.whatshot,
+                size: 28.0,
+                color: Colors.red,
+              ),
+            )
           ],
         ),
         Row(
