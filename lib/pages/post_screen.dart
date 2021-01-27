@@ -12,6 +12,9 @@ class PostScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('userId: $userId');
+    print('postId: $postId');
+
     return FutureBuilder(
       future: postsRef
           .document(userId)

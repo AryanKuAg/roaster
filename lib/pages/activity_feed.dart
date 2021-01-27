@@ -14,12 +14,14 @@ class ActivityFeed extends StatefulWidget {
 }
 
 class _ActivityFeedState extends State<ActivityFeed> {
+  String postOrientation = 'general';
+
   getActivityFeed() async {
     QuerySnapshot snapshot = await activityFeedRef
         .document(currentUser.id)
         .collection('feedItems')
         .orderBy('timestamp', descending: true)
-        .limit(20)
+        .limit(25)
         .getDocuments();
     List<ActivityFeedItem> feedItems = [];
     snapshot.documents.forEach((doc) {
@@ -28,12 +30,60 @@ class _ActivityFeedState extends State<ActivityFeed> {
     return feedItems;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.orangeAccent,
-      appBar: header(titleText: 'Activity Feed'),
-      body: Container(
+  getRoastedActivityFeed() async {
+    QuerySnapshot snapshot = await activityFeedRef
+        .document(currentUser.id)
+        .collection('roastedFeedItems')
+        .orderBy('timestamp', descending: true)
+        .limit(10)
+        .getDocuments();
+    List<ActivityFeedItem> feedItems = [];
+    snapshot.documents.forEach((doc) {
+      feedItems.add(ActivityFeedItem.fromDocument(doc));
+    });
+    return feedItems;
+  }
+
+  setPostOrientation(String postOrientation) {
+    setState(() {
+      this.postOrientation = postOrientation;
+    });
+  }
+
+  buildTogglePostOrientation() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        IconButton(
+          onPressed: () => setPostOrientation("general"),
+          icon: Icon(Icons.notifications),
+          color: postOrientation == 'general' ? Colors.cyan : Colors.grey,
+        ),
+        IconButton(
+          onPressed: () => setPostOrientation("roast"),
+          icon: Icon(Icons.whatshot),
+          color: postOrientation == 'roast' ? Colors.red : Colors.grey,
+        ),
+      ],
+    );
+  }
+
+  Container buildNotificationPage() {
+    if (postOrientation == 'roast') {
+      return Container(
+        child: FutureBuilder(
+          future: getRoastedActivityFeed(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return circularProgress();
+            }
+            return ListView(
+                children: [buildTogglePostOrientation(), ...snapshot.data]);
+          },
+        ),
+      );
+    } else {
+      return Container(
         child: FutureBuilder(
           future: getActivityFeed(),
           builder: (context, snapshot) {
@@ -41,10 +91,26 @@ class _ActivityFeedState extends State<ActivityFeed> {
               return circularProgress();
             }
             return ListView(
-              children: snapshot.data,
-            );
+                children: [buildTogglePostOrientation(), ...snapshot.data]);
           },
         ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.orangeAccent,
+      appBar: header(titleText: 'Activity Feed'),
+      body: FutureBuilder(
+        future: getActivityFeed(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return circularProgress();
+          }
+          return buildNotificationPage();
+        },
       ),
     );
   }
@@ -100,7 +166,7 @@ class ActivityFeedItem extends StatelessWidget {
   }
 
   configureMediaPreview(context) {
-    if (type == "like" || type == 'comment') {
+    if (type == "like" || type == 'comment' || type == 'roast') {
       mediaPreview = GestureDetector(
         onTap: () => showPost(context),
         child: Container(
@@ -128,6 +194,8 @@ class ActivityFeedItem extends StatelessWidget {
       activityItemText = "is following you";
     } else if (type == 'comment') {
       activityItemText = 'replied: $commentData';
+    } else if (type == 'roast') {
+      activityItemText = 'roasted you';
     } else {
       activityItemText = "Error: Unknown type '$type'";
     }

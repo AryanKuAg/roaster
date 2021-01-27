@@ -15,14 +15,20 @@ import 'package:uuid/uuid.dart';
 
 class Upload extends StatefulWidget {
   final User currentUser;
+  final File uploadImage;
+  final String roastedId;
 
-  Upload({this.currentUser});
+  Upload({this.currentUser, this.uploadImage, this.roastedId});
   @override
-  _UploadState createState() => _UploadState();
+  _UploadState createState() =>
+      _UploadState(file: uploadImage, roastedId: roastedId);
 }
 
 class _UploadState extends State<Upload>
     with AutomaticKeepAliveClientMixin<Upload> {
+  _UploadState({this.file, this.roastedId});
+
+  final String roastedId;
   TextEditingController locationController = TextEditingController();
   TextEditingController captionController = TextEditingController();
   File file;
@@ -138,6 +144,7 @@ class _UploadState extends State<Upload>
         .collection("userPosts")
         .document(postId)
         .setData({
+      "roastedId": roastedId,
       "postId": postId,
       "ownerId": widget.currentUser.id,
       "username": widget.currentUser.username,
@@ -146,6 +153,27 @@ class _UploadState extends State<Upload>
       "location": location,
       "timestamp": timestamp,
       "likes": {},
+    });
+    if (roastedId != null) addRoasterToRoasterActivityFeed(mediaUrl: mediaUrl);
+  }
+
+  addRoasterToRoasterActivityFeed({@required String mediaUrl}) {
+    // add a notification to the postOwner's activity feed only if comment made by OTHER user (to avoid getting notification for our own like)
+    // bool isNotPostOwner = currentUser.id != ownerId;
+    // if (isNotPostOwner) {
+    activityFeedRef
+        .document(roastedId)
+        .collection("roastedFeedItems")
+        .document(postId)
+        .setData({
+      "type": "roast",
+      "username": currentUser.username,
+      "userId": currentUser.id,
+      "userProfileImg": currentUser.photoUrl,
+      "postId": postId,
+      "roastedId": roastedId,
+      "mediaUrl": mediaUrl,
+      "timestamp": timestamp,
     });
   }
 

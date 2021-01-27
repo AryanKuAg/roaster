@@ -17,13 +17,15 @@ class _SearchState extends State<Search>
   TextEditingController searchController = TextEditingController();
   Future<QuerySnapshot> searchResultsFuture;
   handleSearch(String query) {
-    Future<QuerySnapshot> users = usersRef
-        .where('displayName', isGreaterThanOrEqualTo: query)
-        .getDocuments();
+    if (searchController.text.trim() != '') {
+      Future<QuerySnapshot> users = usersRef
+          .where('displayName', isGreaterThanOrEqualTo: query)
+          .getDocuments();
 
-    setState(() {
-      searchResultsFuture = users;
-    });
+      setState(() {
+        searchResultsFuture = users;
+      });
+    }
   }
 
   clearSearch() {
@@ -34,6 +36,13 @@ class _SearchState extends State<Search>
     return AppBar(
       backgroundColor: Colors.white,
       title: TextFormField(
+        validator: (val) {
+          if (val.trim().contains(' ') || val.trim() == '') {
+            return 'Username contain whitespace';
+          } else {
+            return null;
+          }
+        },
         controller: searchController,
         decoration: InputDecoration(
             hintText: 'Search for a user...',

@@ -49,6 +49,7 @@ class _HomeState extends State<Home> {
       print(err);
     });
     //re-authenticate the user
+
     googleSignIn.signInSilently(suppressErrors: false).then((account) {
       handleSignIn(account);
     }).catchError((err) {
@@ -123,8 +124,12 @@ class _HomeState extends State<Home> {
 
     if (!doc.exists) {
       //if not exists then create a username
-      final username = await Navigator.push(
-          context, MaterialPageRoute(builder: (ctx) => CreateAccount()));
+      String username;
+      while (username == null) {
+        username = await Navigator.push(
+            context, MaterialPageRoute(builder: (ctx) => CreateAccount()));
+      }
+
       //Now store data in firestore collection
       usersRef.document(user.id).setData({
         'id': user.id,

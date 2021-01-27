@@ -50,7 +50,9 @@ class _CreateAccountState extends State<CreateAccount> {
                     key: _formKey,
                     child: TextFormField(
                       validator: (val) {
-                        if (val.trim().length < 3 || val.isEmpty) {
+                        if (val.trim().contains(' ')) {
+                          return 'Username contain whitespace';
+                        } else if (val.trim().length < 3 || val.isEmpty) {
                           return 'Username too short';
                         } else if (val.trim().length > 12) {
                           return "Username too long";

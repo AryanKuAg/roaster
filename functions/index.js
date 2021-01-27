@@ -118,57 +118,108 @@ const postId = context.params.postId;
 });
 
 exports.onCreateActivityFeedItem = functions.firestore.document('/feed/{userId}/feedItems/{activityFeedItem}')
-.onCreate(async (snapshot, context) => {
- console.log('Activity Feed Item Created', snapshot.data());
+   .onCreate(async (snapshot, context) => {
+    console.log('Activity Feed Item Created', snapshot.data());
 
- // 1) Get user connected to the feed
- const userId = context.params.userId;
+    // 1) Get user connected to the feed
+    const userId = context.params.userId;
 
- const userRef = admin.firestore().doc('users/${userId}');
- const doc = await userRef.get();
+    const userRef = admin.firestore().doc('users/${userId}');
+    const doc = await userRef.get();
 
- // 2) Once we have user, check if they have a notification token, send notification if they have token
- const androidNotificationToken = doc.data().androidNotificationToken;
- const createdActivityFeedItem = snapshot.data();
- if (androidNotificationToken){
- // send notification
- sendNotification(androidNotificationToken, createdActivityFeedItem);
- } else{
-  console.log('No token for user, cannot send notification');
- }
+    // 2) Once we have user, check if they have a notification token, send notification if they have token
+    const androidNotificationToken = doc.data().androidNotificationToken;
+    const createdActivityFeedItem = snapshot.data();
+    if (androidNotificationToken){
+    // send notification
+    sendNotification(androidNotificationToken, createdActivityFeedItem);
+    } else{
+     console.log('No token for user, cannot send notification');
+    }
 
- function sendNotification(androidNotificationToken, activityFeedItem){
- let body;
+    function sendNotification(androidNotificationToken, activityFeedItem){
+    let body;
 
-// 3) switch body value based of notification type
- switch( activityFeedItem.type){
- case 'comment':
- body = '${activityFeedItem.username} replied: ${activityFeedItem.commentData}';
- break;
- case 'like':
-  body = '${activityFeedItem.username} liked your post';
-  break;
-  case 'follow':
-   body = '${activityFeedItem.username} started following you';
-   break;
+   // 3) switch body value based of notification type
+    switch( activityFeedItem.type){
+    case 'comment':
+    body = '${activityFeedItem.username} replied: ${activityFeedItem.commentData}';
+    break;
+    case 'like':
+     body = '${activityFeedItem.username} liked your post';
+     break;
+     case 'follow':
+      body = '${activityFeedItem.username} started following you';
+      break;
 
- default:
- break;
+    default:
+    break;
 
- }
+    }
 
- // 4) Create message for push notification
- const message = {
- notification: {body}, token: androidNotificationToken, data: {recipient: userId}};
+    // 4) Create message for push notification
+    const message = {
+    notification: {body}, token: androidNotificationToken, data: {recipient: userId}};
 
- // 5) Send message with admin.messaging()
+    // 5) Send message with admin.messaging()
 
- admin.messaging().send(message).then(response => {
- // Response is a message ID string
- console.log('Successfully send message', response);
- }).catch(error => {
- console.log('Error sending message', error);
- });
+    admin.messaging().send(message).then(response => {
+    // Response is a message ID string
+    console.log('Successfully send message', response);
+    }).catch(error => {
+    console.log('Error sending message', error);
+    });
 
- }
-});
+    }
+   });
+
+
+   exports.onCreateRoastedFeedItem = functions.firestore.document('/feed/{userId}/roastedFeedItems/{activityFeedItem}')
+   .onCreate(async (snapshot, context) => {
+    console.log('Activity Feed Item Created', snapshot.data());
+
+    // 1) Get user connected to the feed
+    const userId = context.params.userId;
+
+    const userRef = admin.firestore().doc('users/${userId}');
+    const doc = await userRef.get();
+
+    // 2) Once we have user, check if they have a notification token, send notification if they have token
+    const androidNotificationToken = doc.data().androidNotificationToken;
+    const createdActivityFeedItem = snapshot.data();
+    if (androidNotificationToken){
+    // send notification
+    sendNotification(androidNotificationToken, createdActivityFeedItem);
+    } else{
+     console.log('No token for user, cannot send notification');
+    }
+
+    function sendNotification(androidNotificationToken, activityFeedItem){
+    let body;
+
+   // 3) switch body value based of notification type
+    switch( activityFeedItem.type){
+    case 'roast':
+    body = '${activityFeedItem.username} Roasted You.';
+    break;
+
+    default:
+    break;
+
+    }
+
+    // 4) Create message for push notification
+    const message = {
+    notification: {body}, token: androidNotificationToken, data: {recipient: userId}};
+
+    // 5) Send message with admin.messaging()
+
+    admin.messaging().send(message).then(response => {
+    // Response is a message ID string
+    console.log('Successfully send message', response);
+    }).catch(error => {
+    console.log('Error sending message', error);
+    });
+
+    }
+   });

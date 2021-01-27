@@ -103,7 +103,10 @@ class _TimelineState extends State<Timeline> {
                   ],
                 ),
               ),
-              Column(children: userResults),
+              if (userResults != null)
+                Column(children: userResults)
+              else
+                Container(child: Text('')),
             ],
           ),
         );
