@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -9,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:roaster/models/user.dart';
 import 'package:roaster/pages/home.dart';
+import 'package:roaster/widgets/advertisementData.dart';
 import 'package:roaster/widgets/progress.dart';
 import 'package:image/image.dart' as Im;
 import 'package:uuid/uuid.dart';
@@ -34,6 +36,35 @@ class _UploadState extends State<Upload>
   File file;
   bool isUploading = false;
   String postId = Uuid().v4();
+  InterstitialAd _interstitialAd;
+  // BannerAd _bannerAd;
+
+  @override
+  void initState() {
+    super.initState();
+    // FirebaseAdMob.instance
+    //     .initialize(appId: 'ca-app-pub-3739926644625425~2711043189');
+    //
+    // _bannerAd = AdvertisementData().createBannerAd()
+    //   ..load().then((value) {
+    //     if (value && this.mounted) {
+    //       _bannerAd..show(anchorType: AnchorType.top, anchorOffset: 85.0);
+    //     }
+    //   });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _interstitialAd?.dispose();
+    // try {
+    //   _bannerAd?.dispose();
+    //   _bannerAd = null;
+    // } catch (ex) {
+    //   print("banner dispose error");
+    // }
+  }
+
   handleTakePhoto() async {
     Navigator.of(context).pop();
     PickedFile pickedFile = await ImagePicker().getImage(
@@ -104,7 +135,9 @@ class _UploadState extends State<Upload>
                 style: TextStyle(color: Colors.white, fontSize: 22.0),
               ),
               color: Colors.deepOrange,
-              onPressed: () => selectImage(context),
+              onPressed: () {
+                selectImage(context);
+              },
             ),
           )
         ],
@@ -130,20 +163,21 @@ class _UploadState extends State<Upload>
   }
 
   Future<String> uploadImage(imageFile) async {
-    StorageUploadTask uploadTask =
+    UploadTask uploadTask =
         storageRef.child("post_$postId.jpg").putFile(imageFile);
-    StorageTaskSnapshot storageSnap = await uploadTask.onComplete;
+    TaskSnapshot storageSnap = await uploadTask;
     String downloadUrl = await storageSnap.ref.getDownloadURL();
     return downloadUrl;
   }
+  ///////may be here comes an error i don't know but take a look here also
 
   createPostInFirestore(
       {String mediaUrl, String location, String description}) {
     postsRef
-        .document(widget.currentUser.id)
+        .doc(widget.currentUser.id)
         .collection("userPosts")
-        .document(postId)
-        .setData({
+        .doc(postId)
+        .set({
       "roastedId": roastedId,
       "postId": postId,
       "ownerId": widget.currentUser.id,
@@ -162,10 +196,10 @@ class _UploadState extends State<Upload>
     // bool isNotPostOwner = currentUser.id != ownerId;
     // if (isNotPostOwner) {
     activityFeedRef
-        .document(roastedId)
+        .doc(roastedId)
         .collection("roastedFeedItems")
-        .document(postId)
-        .setData({
+        .doc(postId)
+        .set({
       "type": "roast",
       "username": currentUser.username,
       "userId": currentUser.id,
@@ -178,6 +212,9 @@ class _UploadState extends State<Upload>
   }
 
   handleSubmit() async {
+    AdvertisementData().createInterstitialAd()
+      ..load()
+      ..show();
     setState(() {
       isUploading = true;
     });

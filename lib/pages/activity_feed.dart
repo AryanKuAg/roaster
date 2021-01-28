@@ -1,9 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
 import 'package:roaster/pages/home.dart';
 import 'package:roaster/pages/post_screen.dart';
 import 'package:roaster/pages/profile.dart';
+import 'package:roaster/widgets/advertisementData.dart';
 import 'package:roaster/widgets/header.dart';
 import 'package:roaster/widgets/progress.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -16,15 +18,43 @@ class ActivityFeed extends StatefulWidget {
 class _ActivityFeedState extends State<ActivityFeed> {
   String postOrientation = 'general';
 
+  BannerAd _bannerAd;
+  List<String> followingList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // FirebaseAdMob.instance
+    //     .initialize(appId: 'ca-app-pub-3739926644625425~2711043189');
+    //
+    // _bannerAd = AdvertisementData().createBannerAd()
+    //   ..load().then((value) {
+    //     if (value && this.mounted) {
+    //       _bannerAd..show(anchorType: AnchorType.top, anchorOffset: 85.0);
+    //     }
+    //   });
+  }
+
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  //   try {
+  //     _bannerAd?.dispose();
+  //     _bannerAd = null;
+  //   } catch (ex) {
+  //     print("banner dispose error");
+  //   }
+  // }
+
   getActivityFeed() async {
     QuerySnapshot snapshot = await activityFeedRef
-        .document(currentUser.id)
+        .doc(currentUser.id)
         .collection('feedItems')
         .orderBy('timestamp', descending: true)
         .limit(25)
-        .getDocuments();
+        .get();
     List<ActivityFeedItem> feedItems = [];
-    snapshot.documents.forEach((doc) {
+    snapshot.docs.forEach((doc) {
       feedItems.add(ActivityFeedItem.fromDocument(doc));
     });
     return feedItems;
@@ -32,13 +62,13 @@ class _ActivityFeedState extends State<ActivityFeed> {
 
   getRoastedActivityFeed() async {
     QuerySnapshot snapshot = await activityFeedRef
-        .document(currentUser.id)
+        .doc(currentUser.id)
         .collection('roastedFeedItems')
         .orderBy('timestamp', descending: true)
         .limit(10)
-        .getDocuments();
+        .get();
     List<ActivityFeedItem> feedItems = [];
-    snapshot.documents.forEach((doc) {
+    snapshot.docs.forEach((doc) {
       feedItems.add(ActivityFeedItem.fromDocument(doc));
     });
     return feedItems;

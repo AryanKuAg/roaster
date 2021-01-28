@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,16 +14,17 @@ import 'package:roaster/pages/profile.dart';
 import 'package:roaster/pages/search.dart';
 import 'package:roaster/pages/timeline.dart';
 import 'package:roaster/pages/upload.dart';
+import 'package:roaster/widgets/advertisementData.dart';
 
 final GoogleSignIn googleSignIn = GoogleSignIn();
-final StorageReference storageRef = FirebaseStorage.instance.ref();
-final postsRef = Firestore.instance.collection('posts');
-final usersRef = Firestore.instance.collection('users');
-final commentsRef = Firestore.instance.collection('comments');
-final followersRef = Firestore.instance.collection('followers');
-final followingRef = Firestore.instance.collection('following');
-final timelineRef = Firestore.instance.collection('timeline');
-final activityFeedRef = Firestore.instance.collection('feed');
+final Reference storageRef = FirebaseStorage.instance.ref();
+final postsRef = FirebaseFirestore.instance.collection('posts');
+final usersRef = FirebaseFirestore.instance.collection('users');
+final commentsRef = FirebaseFirestore.instance.collection('comments');
+final followersRef = FirebaseFirestore.instance.collection('followers');
+final followingRef = FirebaseFirestore.instance.collection('following');
+final timelineRef = FirebaseFirestore.instance.collection('timeline');
+final activityFeedRef = FirebaseFirestore.instance.collection('feed');
 final DateTime timestamp = DateTime.now();
 User currentUser;
 
@@ -37,11 +39,13 @@ class _HomeState extends State<Home> {
   bool isAuth = false;
   PageController pageController;
   int pageIndex = 0;
+  BannerAd _bannerAd;
 
   @override
   void initState() {
     super.initState();
     pageController = PageController();
+
     googleSignIn.onCurrentUserChanged.listen((account) {
       print('authenticated account is $account');
       handleSignIn(account);
@@ -60,6 +64,7 @@ class _HomeState extends State<Home> {
   @override
   void dispose() {
     super.dispose();
+
     pageController.dispose();
   }
 
@@ -83,9 +88,7 @@ class _HomeState extends State<Home> {
 
     _firebaseMessaging.getToken().then((token) {
       print("Firebase Messaging Token: $token\n");
-      usersRef
-          .document(user.id)
-          .updateData({"androidNotificationToken": token});
+      usersRef.doc(user.id).update({"androidNotificationToken": token});
     });
 
     _firebaseMessaging.configure(
@@ -120,7 +123,7 @@ class _HomeState extends State<Home> {
   createUserInFirestore() async {
     //check that user exists in users collection or not
     final GoogleSignInAccount user = googleSignIn.currentUser;
-    DocumentSnapshot doc = await usersRef.document(user.id).get();
+    DocumentSnapshot doc = await usersRef.doc(user.id).get();
 
     if (!doc.exists) {
       //if not exists then create a username
@@ -131,7 +134,7 @@ class _HomeState extends State<Home> {
       }
 
       //Now store data in firestore collection
-      usersRef.document(user.id).setData({
+      usersRef.doc(user.id).set({
         'id': user.id,
         'username': username,
         'photoUrl': user.photoUrl,
@@ -142,11 +145,11 @@ class _HomeState extends State<Home> {
       });
       // make new user their own follower (to include their posts in their timeline)
       await followersRef
-          .document(user.id)
+          .doc(user.id)
           .collection('userFollowers')
-          .document(user.id)
-          .setData({});
-      doc = await usersRef.document(user.id).get();
+          .doc(user.id)
+          .set({});
+      doc = await usersRef.doc(user.id).get();
     }
 
     currentUser = User.fromDocument(doc);

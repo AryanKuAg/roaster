@@ -1,10 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:roaster/models/user.dart';
 import 'package:roaster/pages/activity_feed.dart';
 import 'package:roaster/pages/home.dart';
+import 'package:roaster/widgets/advertisementData.dart';
 import 'package:roaster/widgets/progress.dart';
 
 class Search extends StatefulWidget {
@@ -14,13 +16,38 @@ class Search extends StatefulWidget {
 
 class _SearchState extends State<Search>
     with AutomaticKeepAliveClientMixin<Search> {
+  // BannerAd _bannerAd;
+  @override
+  void initState() {
+    super.initState();
+    // FirebaseAdMob.instance
+    //     .initialize(appId: 'ca-app-pub-3739926644625425~2711043189');
+    //
+    // _bannerAd = AdvertisementData().createBannerAd()
+    //   ..load().then((value) {
+    //     if (value && this.mounted) {
+    //       _bannerAd..show(anchorType: AnchorType.top, anchorOffset: 85.0);
+    //     }
+    //   });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    // try {
+    //   _bannerAd?.dispose();
+    //   _bannerAd = null;
+    // } catch (ex) {
+    //   print("banner dispose error");
+    // }
+  }
+
   TextEditingController searchController = TextEditingController();
   Future<QuerySnapshot> searchResultsFuture;
   handleSearch(String query) {
     if (searchController.text.trim() != '') {
-      Future<QuerySnapshot> users = usersRef
-          .where('displayName', isGreaterThanOrEqualTo: query)
-          .getDocuments();
+      Future<QuerySnapshot> users =
+          usersRef.where('displayName', isGreaterThanOrEqualTo: query).get();
 
       setState(() {
         searchResultsFuture = users;
@@ -95,15 +122,18 @@ class _SearchState extends State<Search>
           return circularProgress();
         }
         List<UserResult> searchResults = [];
-        snapshot.data.documents.forEach((doc) {
+        snapshot.data.docs.forEach((doc) {
           User user = User.fromDocument(doc);
           UserResult searchResult = UserResult(user);
 
           searchResults.add(searchResult);
           print(user.username);
         });
-        return ListView(
-          children: searchResults,
+        return Container(
+          margin: const EdgeInsets.only(top: 60.0),
+          child: ListView(
+            children: searchResults,
+          ),
         );
       },
     );
